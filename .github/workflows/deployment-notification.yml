@@ -1,0 +1,42 @@
+name: Deployment notification
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        required: true
+        type: string
+      STATUS:
+        required: true
+        type: string
+      COMMIT_MESSAGE:
+        required: true
+        type: string
+jobs:
+  slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send slack notification
+        env:
+          COMMIT_MESSAGE: ${{inputs.COMMIT_MESSAGE}}
+        run: |
+          JSON_PAYLOAD=$(jq --null-input \
+            --arg repository "${{github.repository}}" \
+            --arg environment "${{inputs.ENVIRONMENT}}" \
+            --arg requester "${{github.actor}}" \
+            --arg status "${{inputs.STATUS}}" \
+            --arg branch "${{inputs.commithash != '' && inputs.commithash || github.ref_name}}" \
+            --arg commit_sha "${{inputs.commithash != '' && inputs.commithash || github.sha}}" \
+            --arg commit_message "$COMMIT_MESSAGE" \
+            --arg action_run_id "${{github.run_id}}" \
+            '{ "repository": $repository, "environment": $environment, "requester": $requester, "status": $status, "branch": $branch, "commit_sha": $commit_sha, "commit_message": $commit_message, "action_run_id": $action_run_id }')
+          echo "$JSON_PAYLOAD"
+          curl -s -d "$JSON_PAYLOAD" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_AUTHORIZATION }}" \
+            -X POST \
+            ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_PRODUCTION_URL }}
+          curl -s -d "$JSON_PAYLOAD" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_AUTHORIZATION }}" \
+            -X POST \
+            ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_STAGING_URL }}
