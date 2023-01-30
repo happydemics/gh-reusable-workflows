@@ -1,0 +1,44 @@
+name: Bundler outdated dependencies check
+on:
+  workflow_call:
+    inputs:
+      SLACK_CHANNEL:
+        required: false
+        type: string
+      WORKING_DIRECTORY:
+        default: '.'
+        type: string
+
+env:
+  OUTPUT_FILENAME: bundle_outdated.txt
+
+jobs:
+  bundle-outdated-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get ruby version
+        id: get-ruby-version
+        run: |
+          echo RUBY_VERSION=$(grep 'ruby ' ${{ inputs.WORKING_DIRECTORY }}/.tool-versions|cut -d ' ' -f 2) >> $GITHUB_OUTPUT
+      - name: Set up ruby
+        uses: ruby/setup-ruby@v1.134.0
+        with:
+          ruby-version: "${{ steps.get-ruby-version.outputs.RUBY_VERSION }}"
+      - id: bundle-outdated
+        run: bundle outdated > ${{ env.OUTPUT_FILENAME }}
+        continue-on-error: true
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+      - name: Print file content
+        run: cat ${{ env.OUTPUT_FILENAME }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+      - if: steps.bundle-outdated.outcome == 'failure'
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+        run: |
+          curl \
+          -F file=@${{ env.OUTPUT_FILENAME }} \
+          -F "initial_comment=\`bundle outdated\` on https://github.com/${{ github.repository }}" \
+          -F channels=${{inputs.SLACK_CHANNEL}} \
+          -H "Authorization: Bearer ${{secrets.SLACK_PACKAGE_UPDATE_BOT_SECRET}}" \
+          https://slack.com/api/files.upload
