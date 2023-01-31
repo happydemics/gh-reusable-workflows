@@ -1,0 +1,36 @@
+name: Yarn outdated dependencies check
+on:
+  workflow_call:
+    inputs:
+      SLACK_CHANNEL:
+        required: false
+        type: string
+      WORKING_DIRECTORY:
+        default: '.'
+        type: string
+
+env:
+  OUTPUT_FILENAME: yarn_outdated.txt
+
+jobs:
+  yarn-outdated-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - id: yarn-outdated
+        run: yarn outdated > ${{ env.OUTPUT_FILENAME }}
+        continue-on-error: true
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+      - name: Print file content
+        run: cat ${{ env.OUTPUT_FILENAME }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+      - if: steps.yarn-outdated.outcome == 'failure'
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+        run: |
+          curl \
+          -F file=@${{ env.OUTPUT_FILENAME }} \
+          -F "initial_comment=\`yarn outdated\` on https://github.com/${{ github.repository }}" \
+          -F channels=${{inputs.SLACK_CHANNEL}} \
+          -H "Authorization: Bearer ${{secrets.SLACK_PACKAGE_UPDATE_BOT_SECRET}}" \
+          https://slack.com/api/files.upload
