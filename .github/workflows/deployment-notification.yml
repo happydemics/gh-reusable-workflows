@@ -35,8 +35,3 @@ jobs:
             -H "Authorization: ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_AUTHORIZATION }}" \
             -X POST \
             ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_PRODUCTION_URL }}
-          curl -s -d "$JSON_PAYLOAD" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_AUTHORIZATION }}" \
-            -X POST \
-            ${{ secrets.LAMBDA_DEPLOYMENT_TO_SLACK_NOTIFICATIONS_STAGING_URL }}
