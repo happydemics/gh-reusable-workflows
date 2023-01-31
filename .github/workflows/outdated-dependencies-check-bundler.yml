@@ -27,7 +27,7 @@ jobs:
         with:
           ruby-version: "${{ steps.get-ruby-version.outputs.RUBY_VERSION }}"
       - id: bundle-outdated
-        run: bundle outdated > ${{ env.OUTPUT_FILENAME }}
+        run: bundle outdated --only-explicit > ${{ env.OUTPUT_FILENAME }}
         continue-on-error: true
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
       - name: Print file content
