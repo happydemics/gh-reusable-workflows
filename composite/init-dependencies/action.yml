@@ -1,0 +1,64 @@
+name: '[YARN]Install and cache dependencies'
+description: 'Install / cache package.json dependencies using yarn'
+inputs:
+  cache-node-modules:
+    description: Cache node_modules
+    default: true
+    type: boolean
+  cache-yarn:
+    description: Cache yarn
+    default: true
+    type: boolean
+  checkout-repository:
+    description: Checkout the repository
+    default: true
+    type: boolean
+  inject-ssh-key:
+    description: SSH Key to inject to the SSH_Agent
+    default: ''
+    type: string
+  use-tool-versions:
+    description: Use .tool-versions for NodeJS version
+    default: true
+    type: boolean
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      if: ${{ inputs.checkout-repository }}
+    - uses: actions/setup-node@v3
+      with:
+        node-version-file: ${{ inputs.use-tool-versions && '.tool-versions' }}
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+      if: ${{ !env.ACT && inputs.cache-yarn }}
+      shell: bash
+    - uses: actions/cache@v3
+      name: Cache yarn cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-cache-${{ hashFiles('.tool-versions') }}-${{ hashFiles('package.json', 'yarn.lock') }}
+      if: ${{ !env.ACT && inputs.cache-yarn }}
+    - uses: actions/cache@v3
+      name: Cache node_modules
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('.tool-versions') }}-${{ hashFiles('package.json', 'yarn.lock') }}
+      if: ${{ !env.ACT && inputs.cache-node-modules }}
+    - name: Setup SSH Keys and known_hosts
+      if: ${{ inputs.inject-ssh-key }}
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      run: |
+        ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+        echo "${{ inputs.inject-ssh-key }}" | ssh-add -
+      shell: bash
+    - run: npm install -g yarn
+      if: ${{ env.ACT }}
+      shell: bash
+    # --network-concurrency 1 fix https://github.com/yarnpkg/yarn/issues/7544
+    - run: yarn install --ignore-optional --network-concurrency 1
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      shell: bash
