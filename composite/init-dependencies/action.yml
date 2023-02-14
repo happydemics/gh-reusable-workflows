@@ -25,27 +25,27 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
-      if: ${{ inputs.checkout-repository }}
+      if: ${{ inputs.checkout-repository == 'true' }}
     - uses: actions/setup-node@v3
       with:
         node-version-file: ${{ inputs.use-tool-versions && '.tool-versions' }}
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
-      if: ${{ !env.ACT && inputs.cache-yarn }}
+      if: ${{ !env.ACT && inputs.cache-yarn == 'true' }}
       shell: bash
     - uses: actions/cache@v3
       name: Cache yarn cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-yarn-cache-${{ hashFiles('.tool-versions') }}-${{ hashFiles('package.json', 'yarn.lock') }}
-      if: ${{ !env.ACT && inputs.cache-yarn }}
+      if: ${{ !env.ACT && inputs.cache-yarn == 'true' }}
     - uses: actions/cache@v3
       name: Cache node_modules
       with:
         path: node_modules
         key: ${{ runner.os }}-node-modules-${{ hashFiles('.tool-versions') }}-${{ hashFiles('package.json', 'yarn.lock') }}
-      if: ${{ !env.ACT && inputs.cache-node-modules }}
+      if: ${{ !env.ACT && inputs.cache-node-modules == 'true' }}
     - name: Setup SSH Keys and known_hosts
       if: ${{ inputs.inject-ssh-key }}
       env:
