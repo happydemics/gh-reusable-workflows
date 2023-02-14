@@ -1,6 +1,6 @@
 # init-dependencies
 
-Install / cache package.json dependencies using yarn
+Install / cache package.json dependencies using yarn.
 
 ## Parameters
 
@@ -16,7 +16,7 @@ Install / cache package.json dependencies using yarn
 
 ```yaml
 - name: Yarn install
-  uses: /happydemics/gh-reusable-workflows/composite/init-dependencies@main
+  uses: happydemics/gh-reusable-workflows/composite/init-dependencies@main
   with:
     inject-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 ```
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Yarn install
-        uses: /happydemics/gh-reusable-workflows/composite/init-dependencies@main
+        uses: happydemics/gh-reusable-workflows/composite/init-dependencies@main
         with:
           inject-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - run: yarn build
