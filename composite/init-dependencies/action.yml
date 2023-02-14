@@ -58,7 +58,7 @@ runs:
       if: ${{ env.ACT }}
       shell: bash
     # --network-concurrency 1 fix https://github.com/yarnpkg/yarn/issues/7544
-    - run: yarn install --ignore-optional --network-concurrency 1
+    - run: yarn install --network-concurrency 1
       env:
         SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       shell: bash
