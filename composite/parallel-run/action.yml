@@ -1,0 +1,13 @@
+name: 'Run in parallel'
+description: 'Run a bunch of commands in parallel'
+inputs:
+  commands_to_run:
+    description: Commands to run in parallel.
+    default: ''
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        ${{ github.action_path }}/parallel-run.sh ${{ inputs.commands_to_run }}
+      shell: bash

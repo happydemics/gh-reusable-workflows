@@ -33,6 +33,7 @@ Send a slack notification with the `yarn outdated` output.
 
 ## Composites
 
-| Name | Description | |
-|--|--|--|
-| init-dependencies | Install / cache package.json dependencies using yarn | [Readme](./composite/init-dependencies/README.md) |
+| Name              | Description                                           |                                                   |
+| ----------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| init-dependencies | Install / cache package.json dependencies using yarn. | [Readme](./composite/init-dependencies/README.md) |
+| parallel-run      | Permit to run multiple bash commands in parallel.     | [Readme](./composite/parallel-run/README.md)      |
