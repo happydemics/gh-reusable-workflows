@@ -1,0 +1,16 @@
+name: Semver tag release
+on:
+  workflow_call:
+
+jobs:
+  semver-tag-release:
+    if: github.base_ref == 'main' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag release
+        uses: K-Phoen/semver-release-action@v1.3.2
+        with:
+          release_branch: main
+          release_strategy: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
